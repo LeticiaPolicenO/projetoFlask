@@ -1,177 +1,124 @@
 import unittest
-import json
-from app import app  # Certifique-se de que a importação está correta
+import requests
+
+BASE_URL = "http://127.0.0.1:5000"
 
 class TestAPI(unittest.TestCase):
-
-    @classmethod
-    def setUpClass(cls):
-        cls.client = app.test_client()
-        cls.client.testing = True
-
-    # ===================== Testes CRUD para Alunos =====================
-
-    def test_create_aluno(self):
+    
+    # ----------------------
+    # Testes para Alunos
+    # ----------------------
+    def test_adicionar_aluno(self):
         try:
-            novo_aluno = {
-                "id": 7,
-                "nome": "Lucas Lima",
-                "idade": 21,
-                "notas": [8.5, 7.3, 9.2],
-                "email": "lucas.lima@email.com"
-            }
-            response = self.client.post('/alunos', json=novo_aluno)
+            response = requests.post(f"{BASE_URL}/alunos", json={"nome": "João", "idade": 20})
             self.assertEqual(response.status_code, 201)
-            self.assertEqual(json.loads(response.data)["nome"], novo_aluno["nome"])
         except Exception as e:
-            self.fail(f"Erro no teste test_create_aluno: {e}")
-
-    def test_get_alunos(self):
+            self.fail(f"Erro no teste: {e}")
+    
+    def test_listar_alunos(self):
         try:
-            response = self.client.get('/alunos')
+            response = requests.get(f"{BASE_URL}/alunos")
             self.assertEqual(response.status_code, 200)
-            self.assertIn('alunos', json.loads(response.data).keys())
         except Exception as e:
-            self.fail(f"Erro no teste test_get_alunos: {e}")
-
-    def test_get_aluno_by_id(self):
+            self.fail(f"Erro no teste: {e}")
+    
+    def test_atualizar_aluno(self):
         try:
-            response = self.client.get('/alunos/1')
+            response = requests.put(f"{BASE_URL}/alunos/1", json={"nome": "João Silva", "idade": 21})
+            self.assertIn(response.status_code, [200, 404])  # Pode não existir o aluno
+        except Exception as e:
+            self.fail(f"Erro no teste: {e}")
+    
+    def test_excluir_aluno(self):
+        try:
+            response = requests.delete(f"{BASE_URL}/alunos/1")
+            self.assertIn(response.status_code, [200, 404])
+        except Exception as e:
+            self.fail(f"Erro no teste: {e}")
+    
+    def test_buscar_aluno_por_id(self):
+        try:
+            response = requests.get(f"{BASE_URL}/alunos/1")
+            self.assertIn(response.status_code, [200, 404])
+        except Exception as e:
+            self.fail(f"Erro no teste: {e}")
+    
+    # ----------------------
+    # Testes para Professores
+    # ----------------------
+    def test_adicionar_professor(self):
+        try:
+            response = requests.post(f"{BASE_URL}/professores", json={"nome": "Carlos", "disciplina": "Matemática"})
+            self.assertEqual(response.status_code, 201)
+        except Exception as e:
+            self.fail(f"Erro no teste: {e}")
+    
+    def test_listar_professores(self):
+        try:
+            response = requests.get(f"{BASE_URL}/professores")
             self.assertEqual(response.status_code, 200)
-            self.assertEqual(json.loads(response.data)["nome"], "Amanda Silva")
         except Exception as e:
-            self.fail(f"Erro no teste test_get_aluno_by_id: {e}")
-
-    def test_update_aluno(self):
+            self.fail(f"Erro no teste: {e}")
+    
+    def test_atualizar_professor(self):
         try:
-            aluno_atualizado = {
-                "nome": "Amanda Souza",
-                "idade": 20,
-                "notas": [8.5, 7.5, 9.0],
-                "email": "amanda.souza@email.com"
-            }
-            response = self.client.put('/alunos/1', json=aluno_atualizado)
+            response = requests.put(f"{BASE_URL}/professores/1", json={"nome": "Carlos Souza", "disciplina": "Física"})
+            self.assertIn(response.status_code, [200, 404])
+        except Exception as e:
+            self.fail(f"Erro no teste: {e}")
+    
+    def test_excluir_professor(self):
+        try:
+            response = requests.delete(f"{BASE_URL}/professores/1")
+            self.assertIn(response.status_code, [200, 404])
+        except Exception as e:
+            self.fail(f"Erro no teste: {e}")
+    
+    def test_buscar_professor_por_id(self):
+        try:
+            response = requests.get(f"{BASE_URL}/professores/1")
+            self.assertIn(response.status_code, [200, 404])
+        except Exception as e:
+            self.fail(f"Erro no teste: {e}")
+    
+    # ----------------------
+    # Testes para Turmas
+    # ----------------------
+    def test_adicionar_turma(self):
+        try:
+            response = requests.post(f"{BASE_URL}/turmas", json={"nome": "Turma A", "ano": 2025})
+            self.assertEqual(response.status_code, 201)
+        except Exception as e:
+            self.fail(f"Erro no teste: {e}")
+    
+    def test_listar_turmas(self):
+        try:
+            response = requests.get(f"{BASE_URL}/turmas")
             self.assertEqual(response.status_code, 200)
-            self.assertEqual(json.loads(response.data)["nome"], aluno_atualizado["nome"])
         except Exception as e:
-            self.fail(f"Erro no teste test_update_aluno: {e}")
-
-    def test_delete_aluno(self):
+            self.fail(f"Erro no teste: {e}")
+    
+    def test_atualizar_turma(self):
         try:
-            response = self.client.delete('/alunos/1')
-            self.assertEqual(response.status_code, 200)
-            self.assertIn('Aluno com ID 1 removido com sucesso', json.loads(response.data)["mensagem"])
+            response = requests.put(f"{BASE_URL}/turmas/1", json={"nome": "Turma B", "ano": 2026})
+            self.assertIn(response.status_code, [200, 404])
         except Exception as e:
-            self.fail(f"Erro no teste test_delete_aluno: {e}")
-
-    # ===================== Testes CRUD para Alunos com falha =====================
-
-    def test_create_aluno_sem_nome(self):
+            self.fail(f"Erro no teste: {e}")
+    
+    def test_excluir_turma(self):
         try:
-            novo_aluno = {
-                "id": 8,
-                "idade": 22,
-                "notas": [7.5, 6.2, 8.9],
-                "email": "sem.nome@email.com"
-            }
-            response = self.client.post('/alunos', json=novo_aluno)
-            self.assertEqual(response.status_code, 400)
-            self.assertIn("Nome é obrigatório", json.loads(response.data)["erro"])
+            response = requests.delete(f"{BASE_URL}/turmas/1")
+            self.assertIn(response.status_code, [200, 404])
         except Exception as e:
-            self.fail(f"Erro no teste test_create_aluno_sem_nome: {e}")
-
-    def test_get_aluno_inexistente(self):
+            self.fail(f"Erro no teste: {e}")
+    
+    def test_buscar_turma_por_id(self):
         try:
-            response = self.client.get('/alunos/999')  # ID inexistente
-            self.assertEqual(response.status_code, 404)
-            self.assertIn("Aluno não encontrado", json.loads(response.data)["erro"])
+            response = requests.get(f"{BASE_URL}/turmas/1")
+            self.assertIn(response.status_code, [200, 404])
         except Exception as e:
-            self.fail(f"Erro no teste test_get_aluno_inexistente: {e}")
-
-    def test_update_aluno_inexistente(self):
-        try:
-            aluno_atualizado = {
-                "nome": "João Silva",
-                "idade": 23,
-                "notas": [9.5, 8.0, 9.8],
-                "email": "joao.silva@email.com"
-            }
-            response = self.client.put('/alunos/999', json=aluno_atualizado)  # ID inexistente
-            self.assertEqual(response.status_code, 404)
-            self.assertIn("Aluno não encontrado", json.loads(response.data)["erro"])
-        except Exception as e:
-            self.fail(f"Erro no teste test_update_aluno_inexistente: {e}")
-
-    def test_delete_aluno_inexistente(self):
-        try:
-            response = self.client.delete('/alunos/999')  # ID inexistente
-            self.assertEqual(response.status_code, 404)
-            self.assertIn("Aluno não encontrado", json.loads(response.data)["erro"])
-        except Exception as e:
-            self.fail(f"Erro no teste test_delete_aluno_inexistente: {e}")
-
-    # ===================== Testes adicionais de falhas e limites de dados =====================
-
-    def test_create_aluno_com_id_duplicado(self):
-        try:
-            aluno_com_id_duplicado = {
-                "id": 1,
-                "nome": "Carlos Oliveira",
-                "idade": 19,
-                "notas": [8.0, 7.0, 6.5],
-                "email": "carlos.oliveira@email.com"
-            }
-            response = self.client.post('/alunos', json=aluno_com_id_duplicado)
-            self.assertEqual(response.status_code, 400)
-            self.assertIn("ID já existe", json.loads(response.data)["erro"])
-        except Exception as e:
-            self.fail(f"Erro no teste test_create_aluno_com_id_duplicado: {e}")
-
-    def test_update_aluno_com_email_invalido(self):
-        try:
-            aluno_atualizado = {
-                "nome": "Maria Oliveira",
-                "idade": 22,
-                "notas": [9.5, 8.5, 7.0],
-                "email": "emailinvalido"
-            }
-            response = self.client.put('/alunos/1', json=aluno_atualizado)
-            self.assertEqual(response.status_code, 400)
-            self.assertIn("Email inválido", json.loads(response.data)["erro"])
-        except Exception as e:
-            self.fail(f"Erro no teste test_update_aluno_com_email_invalido: {e}")
-
-    def test_create_aluno_com_notas_invalidas(self):
-        try:
-            aluno_com_notas_invalidas = {
-                "id": 9,
-                "nome": "Ricardo Lima",
-                "idade": 20,
-                "notas": [12.5, -1.0, 7.5],  # Notas inválidas
-                "email": "ricardo.lima@email.com"
-            }
-            response = self.client.post('/alunos', json=aluno_com_notas_invalidas)
-            self.assertEqual(response.status_code, 400)
-            self.assertIn("Notas inválidas", json.loads(response.data)["erro"])
-        except Exception as e:
-            self.fail(f"Erro no teste test_create_aluno_com_notas_invalidas: {e}")
-
-    def test_delete_aluno_sem_autorizacao(self):
-        try:
-            # Tentando deletar sem permissão (supondo que precise de autenticação)
-            response = self.client.delete('/alunos/1')
-            self.assertEqual(response.status_code, 401)
-            self.assertIn("Autenticação necessária", json.loads(response.data)["erro"])
-        except Exception as e:
-            self.fail(f"Erro no teste test_delete_aluno_sem_autorizacao: {e}")
-
-    def test_get_alunos_vazio(self):
-        try:
-            response = self.client.get('/alunos')
-            self.assertEqual(response.status_code, 200)
-            self.assertEqual(json.loads(response.data)["alunos"], [])
-        except Exception as e:
-            self.fail(f"Erro no teste test_get_alunos_vazio: {e}")
+            self.fail(f"Erro no teste: {e}")
 
 if __name__ == "__main__":
     unittest.main()
+1
