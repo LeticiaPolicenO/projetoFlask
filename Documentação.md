@@ -36,7 +36,7 @@ A API, no geral, oferece uma forma prática e muito eficiente de gerenciar a vid
 
 4. Desafios Encontrados e Como Foram Resolvidos
 
-#
+Um dos desafios foi a execução ao fazer os testes, especialmente com try/catch para lidar com erros. No começo, foi um pouco trabalhoso, mas, com o tempo, o processo funcionou com êxito ao realizar os testes necessários para garantir que a API funcionasse direitinho.
 
 5. Conclusão
 
