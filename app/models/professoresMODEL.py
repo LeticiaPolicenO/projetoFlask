@@ -1,5 +1,7 @@
 from flask import Flask, jsonify, request
 app = Flask(__name__)
+class AlunoNaoEncontrado(Exception):
+    pass
 
 diciProfessor = {
     "professores": [
@@ -36,36 +38,25 @@ diciProfessor = {
         ]
 }
 
-@app.route("/professores", methods=['GET'])
-def get_professores():
-    return jsonify(diciProfessor['professores'])
+def listar_professores():
+    return diciProfessor
 
-@app.route("/professores/<int:idProfessor>", methods=['GET'])
-def get_professor_by_id(idProfessor):
-    professor = next((p for p in diciProfessor['professores'] if p['id'] == idProfessor), None)
-    if professor:
-        return jsonify(professor)
-    return jsonify({"erro": "Professor não encontrado"}), 404
+def encontre_professor_por_id(idProfessor):
+    listar_professores()
+    for professor in diciProfessor['professores']:
+        if professor['id'] == idProfessor:
+            return professor
+        return jsonify({"erro": "Professor não encontrado"}), 404
 
-@app.route("/professores", methods=['POST'])
-def create_professor():
-    novo_professor = request.json
+def criar_professor(novo_professor):
     diciProfessor['professores'].append(novo_professor)
-    return jsonify(novo_professor), 201
 
-@app.route("/professores/<int:idProfessor>", methods=['PUT'])
-def update_professor(idProfessor):
-    professor = next((p for p in diciProfessor['professores'] if p['id'] == idProfessor), None)
-    if professor:
-        dados = request.json
-        professor.update(dados)
-        return jsonify(professor)
-    return jsonify({"erro": "Professor não encontrado"}), 404
 
-@app.route("/professores/<int:idProfessor>", methods=['DELETE'])
-def delete_professor(idProfessor):
-    professor = next((p for p in diciProfessor['professores'] if p['id'] == idProfessor), None)
-    if professor:
-        diciProfessor['professores'].remove(professor)
-        return jsonify({"mensagem": f"Professor com ID {idProfessor} removido com sucesso"})
-    return jsonify({"erro": "Professor não encontrado"}), 404
+def atualizar_professor(idProfessor, novos_dados):
+    professor = encontre_professor_por_id(idProfessor)
+    professor.update(novos_dados)
+
+def deletar_professor(idProfessor):
+    achar_professor = encontre_professor_por_id(idProfessor)
+    diciProfessor['professores'].remove(achar_professor)
+    return jsonify(listar_professores())
