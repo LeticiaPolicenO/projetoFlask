@@ -1,5 +1,7 @@
 from flask import Flask, jsonify, request
 app = Flask(__name__)
+class AlunoNaoEncontrado(Exception):
+    pass
 
 diciTurma = {
     "turmas": [
@@ -41,36 +43,27 @@ diciTurma = {
         ]
     }
 
-@app.route("/turmas", methods=['GET'])
-def get_turmas():
-    return jsonify(diciTurma['turmas'])
+def listar_turmas():
+    return diciTurma
 
-@app.route("/turmas/<int:idTurma>", methods=['GET'])
-def get_turma_by_id(idTurma):
-    turma = next((t for t in diciTurma['turmas'] if t['id'] == idTurma), None)
-    if turma:
-        return jsonify(turma)
-    return jsonify({"erro": "Turma não encontrada"}), 404
+def encontrar_turma_por_id(idTurma):
+    listar_turmas()
+    for turma in diciTurma['turmas']:
+        if turma['id'] == idTurma:
+            return turma
+    return jsonify({"erro": "Turma nao encontrada"}), 404
 
-@app.route("/turmas", methods=['POST'])
-def create_turma():
-    nova_turma = request.json
+
+def criar_turma(nova_turma):
     diciTurma['turmas'].append(nova_turma)
-    return jsonify(nova_turma), 201
 
-@app.route("/turmas/<int:idTurma>", methods=['PUT'])
-def update_turma(idTurma):
-    turma = next((t for t in diciTurma['turmas'] if t['id'] == idTurma), None)
-    if turma:
-        dados = request.json
-        turma.update(dados)
-        return jsonify(turma)
-    return jsonify({"erro": "Turma não encontrada"}), 404
 
-@app.route("/turmas/<int:idTurma>", methods=['DELETE'])
-def delete_turma(idTurma):
-    turma = next((t for t in diciTurma['turmas'] if t['id'] == idTurma), None)
-    if turma:
-        diciTurma['turmas'].remove(turma)
-        return jsonify({"mensagem": f"Turma com ID {idTurma} removida com sucesso"})
-    return jsonify({"erro": "Turma não encontrada"}), 404
+def atualizar_turma(idTurma, novos_dados):
+    turma = encontrar_turma_por_id(idTurma)
+    turma.update(novos_dados)
+
+def deletar_turma(idTurma):
+    turma = encontrar_turma_por_id(idTurma)
+    diciTurma['turmas'].remove(turma)
+    return jsonify(listar_turmas())
+

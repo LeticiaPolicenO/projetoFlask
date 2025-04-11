@@ -1,5 +1,4 @@
 from flask import Flask, jsonify, request
-# from models.model import dici
 from models.alunosMODEL import diciAlunos
 from models.professoresMODEL import diciProfessor
 from models.turmasMODEL import diciTurma
