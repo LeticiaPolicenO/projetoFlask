@@ -2,8 +2,10 @@ from flask import Flask, jsonify, request
 from models.alunosMODEL import diciAlunos
 from models.professoresMODEL import diciProfessor
 from models.turmasMODEL import diciTurma
+from swagger.swagger_config import configure_swagger
+from config import app
 
-app = Flask(__name__)
+configure_swagger(app)
 
 # -------------------- ALUNOS --------------------
 
