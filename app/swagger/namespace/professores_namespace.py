@@ -1,5 +1,11 @@
 from flask_restx import Namespace, Resource, fields
-from models.professoresMODEL import listar_professores, encontre_professor_por_id, criar_professor, atualizar_professor, deletar_professor
+from models.professoresMODEL import (
+    listar_professores,
+    professor_por_id,
+    adicionar_professor,
+    atualizar_professor,
+    excluir_professor,
+)
 
 professores_ns = Namespace("professores", description="Operações relacionadas aos professores.")
 
@@ -25,14 +31,14 @@ class ProfessoresResource(Resource):
     @professores_ns.expect(professor_model)
     def post(self):
         data = professores_ns.payload
-        response, status_code = criar_professor(data)
+        response, status_code = adicionar_professor(data)
         return response, status_code
 
 @professores_ns.route("/<int:id_professor>")
 class ProfessorIdResource(Resource):
     @professores_ns.marshal_with(professor_output_model)
     def get(self, id_professor):
-        return encontre_professor_por_id(id_professor)
+        return professor_por_id(id_professor)
 
     @professores_ns.expect(professor_model)
     def put(self, id_professor):
@@ -41,5 +47,5 @@ class ProfessorIdResource(Resource):
         return data, 200
 
     def delete(self, id_professor):
-        deletar_professor(id_professor)
+        excluir_professor(id_professor)
         return {"message": "Professor excluído com sucesso"}, 200

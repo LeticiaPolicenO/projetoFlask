@@ -1,69 +1,77 @@
-from flask import Flask, jsonify, request
-app = Flask(__name__)
-class AlunoNaoEncontrado(Exception):
+from config import db
+from sqlalchemy.orm import relationship
+from datetime import datetime
+
+alunos_turmas = db.Table('alunos_turmas',
+    db.Column('aluno_id', db.Integer, db.ForeignKey('alunos.id'), primary_key=True),
+    db.Column('turma_id', db.Integer, db.ForeignKey('turmas.id'), primary_key=True)
+)
+
+class Turma(db.Model):
+    __tablename__ = "turmas"
+
+    id = db.Column(db.Integer, primary_key=True)
+    nome = db.Column(db.String(100), nullable=False)
+    semestre = db.Column(db.Integer, nullable=False)
+    
+    alunos = db.relationship("Aluno", secondary="alunos_turmas", back_populates="turmas")
+    professor_id = db.Column(db.Integer, db.ForeignKey("professores.id"), nullable=False)
+    professor = db.relationship("Professor", back_populates="turmas")
+    def __init__(self, nome, semestre, professor_id):
+        self.nome = nome
+        self.semestre = semestre
+        self.professor_id = professor_id
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'nome': self.nome,
+            'semestre': self.semestre,
+            'professor_id': self.professor_id,
+            'alunos_id': [aluno.id for aluno in self.alunos]
+        }
+
+class TurmaNaoEncontrada(Exception):
     pass
 
-diciTurma = {
-    "turmas": [
-            {
-                "id": 1,
-                "nome": "Turma A",
-                "semestre": 1,
-                "alunos_id": [1, 2],
-                "professor_id": 1
-            },
-            {
-                "id": 2,
-                "nome": "Turma B",
-                "semestre": 2,
-                "alunos_id": [3, 4],
-                "professor_id": 2
-            },
-            {
-                "id": 3,
-                "nome": "Turma C",
-                "semestre": 1,
-                "alunos_id": [5, 6],
-                "professor_id": 3
-            },
-            {
-                "id": 4,
-                "nome": "Turma D",
-                "semestre": 2,
-                "alunos_id": [1, 3, 5],
-                "professor_id": 4
-            },
-            {
-                "id": 5,
-                "nome": "Turma E",
-                "semestre": 1,
-                "alunos_id": [2, 4, 6],
-                "professor_id": 5
-            }
-        ]
-    }
+def turma_por_id(id_turma):
+    turma = Turma.query.get(id_turma)
+    if not turma:
+        raise TurmaNaoEncontrada('Turma não encontrada.')
+    return turma.to_dict()
 
 def listar_turmas():
-    return diciTurma
+    turmas = Turma.query.all()
+    return [turma.to_dict() for turma in turmas]
 
-def encontrar_turma_por_id(idTurma):
-    listar_turmas()
-    for turma in diciTurma['turmas']:
-        if turma['id'] == idTurma:
-            return turma
-    return jsonify({"erro": "Turma nao encontrada"}), 404
+def adicionar_turma(novos_dados):
+    nova_turma = Turma(
+        nome=novos_dados['nome'],
+        semestre=int(novos_dados['semestre']),
+        professor_id=int(novos_dados['professor_id'])
+    )
 
+    db.session.add(nova_turma)
+    db.session.commit()
+    return {"message": "Turma adicionada com sucesso!"}, 201
 
-def criar_turma(nova_turma):
-    diciTurma['turmas'].append(nova_turma)
+def atualizar_turma(id_turma, novos_dados):
+    turma = Turma.query.get(id_turma)
+    if not turma:
+        raise TurmaNaoEncontrada('Turma não encontrada.')
 
+    turma.nome = novos_dados['nome']
+    turma.semestre = int(novos_dados['semestre'])
+    turma.professor_id = int(novos_dados['professor_id'])
 
-def atualizar_turma(idTurma, novos_dados):
-    turma = encontrar_turma_por_id(idTurma)
-    turma.update(novos_dados)
+    db.session.commit()
+    return {"message": "Turma atualizada com sucesso!"}
 
-def deletar_turma(idTurma):
-    turma = encontrar_turma_por_id(idTurma)
-    diciTurma['turmas'].remove(turma)
-    return jsonify(listar_turmas())
+def excluir_turma(id_turma):
+    turma = Turma.query.get(id_turma)
+    if not turma:
+        raise TurmaNaoEncontrada('Turma não encontrada.')
 
+    db.session.delete(turma)
+    db.session.commit()
+    return {"message": "Turma excluída com sucesso!"}

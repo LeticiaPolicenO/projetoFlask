@@ -14,11 +14,11 @@ A API foi testada utilizando o Postman e o código foi versionado no GitHub, o q
 
 2. Função de Cada Integrante
 
-Jonatha e Caique: Responsáveis pelo desenvolvimento do código base, configuração do Flask e integração com o banco de dados.
+Jonatha e Caique: Responsáveis pelo desenvolvimento do código base, configuração do Flask e integração com o SQLAlchemy.
 
 Rafael e Letícia: Responsáveis pelos testes da API, garantindo que a aplicação lidasse corretamente com erros e entradas inválidas através do uso do try/catch.
 
-Otávio: Foi responsável pela documentação do projeto, detalhando o funcionamento da API, e contribuiu no desenvolvimento do código.
+Otávio: Foi responsável pela documentação do projeto, detalhando o funcionamento da API, contribuiu no desenvolvimento do Swagger e do SQLAlchemy.
 
 3. Funcionalidades do Projeto
 
